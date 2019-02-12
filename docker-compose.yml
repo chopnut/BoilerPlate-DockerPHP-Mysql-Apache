@@ -1,0 +1,43 @@
+version: '3'
+services:
+  db:
+    image: mysql:5.7
+    container_name: php_db
+    environment:
+      MYSQL_USER: ${WP_DB_USER} 
+      MYSQL_ROOT_PASSWORD: ${WP_DB_USER_PASSWORD}
+      MYSQL_DATABASE: ${WP_DB_NAME}
+      MYSQL_PASSWORD: ${WP_DB_USER_PASSWORD}
+    ports:
+      - "3360:3306"
+    volumes: 
+      #- .\db\visuali_visuali.sql:/docker-entrypoint-initdb.d/visuali_visuali.sql
+      - .\db\mysql:/var/lib/mysql
+    networks: 
+      - back
+  web:
+    image: php:7.2.2-apache
+    container_name: php_web
+    depends_on:
+      - db
+    volumes:
+      - ./public_html/:/var/www/html/
+    ports:
+      - "8181:80"
+    stdin_open: true
+    tty: true
+    networks: 
+      - back
+  phpmyadmin:
+      depends_on: 
+        - db
+      image: phpmyadmin/phpmyadmin
+      ports:
+        - 8182:80
+      environment:
+        MYSQL_ROOT_PASSWORD: ${WP_DB_USER_PASSWORD}
+        PMA_HOST: db
+      networks: 
+        - back
+networks:
+  back:
